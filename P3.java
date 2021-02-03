@@ -2,13 +2,15 @@ import java.io.*;
 import java.util.*;
 
 public class P3 {
-    double lambda1 = 0.7;
-    double lambda2 = 0.2;
-    double lambda3 = 0.1;
-    double epsilon = 0.1;
+    double lambda1 = 0.05;
+    double lambda2 = 0.9;
+    double lambda3 = 0.05;
+    double epsilon = 0.0001;
     int allmesra_hafez = 0;
     int allmesra_molavi = 0;
     int allmesra_ferdowsi = 0;
+
+
 
     public void makeDictionary_Hafez() {
 
@@ -653,7 +655,7 @@ public class P3 {
     }
 
 
-    public double backOff(String str, String poet) {
+    public double backOff( double bigram,String str, String poet) {
         double backOff = 0;
         boolean contain = false;
         switch (poet) {
@@ -683,6 +685,7 @@ public class P3 {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                backOff=backOff+(lambda3*bigram);
                 break;
             case "molavi":
                 String ci_molavi = str;
@@ -710,6 +713,7 @@ public class P3 {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                backOff=backOff+(lambda3*bigram);
                 break;
 
             case "ferdowsi":
@@ -738,6 +742,7 @@ public class P3 {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                backOff=backOff+(lambda3*bigram);
                 break;
 
 
@@ -769,7 +774,9 @@ public class P3 {
         }
         for (int j = 0; j < bigram.size(); j++) {
             String temp = bigram.get(j);
+
             boolean find = false;
+            double bigram_prediction=0;
 
             File file = new File("C:\\Users\\Asus\\workspace\\AI-p3\\src\\Files\\hafez_bigram.txt");
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -780,10 +787,11 @@ public class P3 {
                     String couple2 = splited2[0];
                     if (couple2.equals(temp)) {
 
-                        double predicteon = Double.parseDouble(splited2[1]);
 
-                        predictions.add(predicteon);
-                        find = true;
+                        bigram_prediction = Double.parseDouble(splited2[1]);
+
+//                        predictions.add(predicteon);
+//                        find = true;
                     }
 
 
@@ -794,94 +802,103 @@ public class P3 {
                 e.printStackTrace();
             }
 
-            if (find == false) {
+//            if (find == false) {
                 String[] words = temp.split(";");
-                double backoff = backOff(words[1], "hafez");
+                double backoff = backOff(bigram_prediction,words[1], "hafez");
 
                 predictions.add(backoff);
-            }
+//            }
 
         }
+
+
 
 
         double mul=1;
         for (int j = 0; j <predictions.size() ; j++) {
+
             mul*=predictions.get(j);
         }
+
 
         return mul;
 
 
     }
+//
+public double calculatePrediction_molavi(String str) {
 
-    public double calculatePrediction_molavi(String str) {
-
-        String[] splited = str.split("\\s+");
-        int i = 0;
-        boolean flag = true;
-        ArrayList<String> bigram = new ArrayList<>();
-        ArrayList<Double> predictions = new ArrayList<>();
+    String[] splited = str.split("\\s+");
+    int i = 0;
+    boolean flag = true;
+    ArrayList<String> bigram = new ArrayList<>();
+    ArrayList<Double> predictions = new ArrayList<>();
 
 
-        while (flag) {
+    while (flag) {
 
-            String couple = splited[i] + ";" + splited[i + 1];
-            bigram.add(couple);
-            if (i + 1 == splited.length - 1) {
-                flag = false;
-            } else {
-                i++;
-            }
-
+        String couple = splited[i] + ";" + splited[i + 1];
+        bigram.add(couple);
+        if (i + 1 == splited.length - 1) {
+            flag = false;
+        } else {
+            i++;
         }
-        for (int j = 0; j < bigram.size(); j++) {
-            String temp = bigram.get(j);
-            boolean find = false;
 
-            File file = new File("C:\\Users\\Asus\\workspace\\AI-p3\\src\\Files\\molavi_bigram.txt");
-            try (BufferedReader br = new BufferedReader(new FileReader(file))) {
-                String line;
-                while ((line = br.readLine()) != null) {
-                    // process the line.
-                    String[] splited2 = line.split("=");
-                    String couple2 = splited2[0];
-                    if (couple2.equals(temp)) {
+    }
+    for (int j = 0; j < bigram.size(); j++) {
+        String temp = bigram.get(j);
 
-                        double predicteon = Double.parseDouble(splited2[1]);
+        boolean find = false;
+        double bigram_prediction=0;
 
-
-                        predictions.add(predicteon);
-                        find = true;
-                    }
+        File file = new File("C:\\Users\\Asus\\workspace\\AI-p3\\src\\Files\\molavi_bigram.txt");
+        try (BufferedReader br = new BufferedReader(new FileReader(file))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                // process the line.
+                String[] splited2 = line.split(":");
+                String couple2 = splited2[0];
+                if (couple2.equals(temp)) {
 
 
+                    bigram_prediction = Double.parseDouble(splited2[1]);
+
+//                        predictions.add(predicteon);
+//                        find = true;
                 }
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+
+
             }
-
-            if (find == false) {
-                String[] words = temp.split(";");
-                double backoff = backOff(words[1], "molavi");
-
-                predictions.add(backoff);
-            }
-
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
 
+//            if (find == false) {
+        String[] words = temp.split(";");
+        double backoff = backOff(bigram_prediction,words[1], "molavi");
 
-
-        double mul=1;
-        for (int j = 0; j <predictions.size() ; j++) {
-            mul*=predictions.get(j);
-        }
-
-        return mul;
+        predictions.add(backoff);
+//            }
 
     }
 
+
+
+
+    double mul=1;
+    for (int j = 0; j <predictions.size() ; j++) {
+
+        mul*=predictions.get(j);
+    }
+
+
+    return mul;
+
+
+}
     public double calculatePrediction_ferdowsi(String str) {
 
         String[] splited = str.split("\\s+");
@@ -904,7 +921,9 @@ public class P3 {
         }
         for (int j = 0; j < bigram.size(); j++) {
             String temp = bigram.get(j);
+
             boolean find = false;
+            double bigram_prediction=0;
 
             File file = new File("C:\\Users\\Asus\\workspace\\AI-p3\\src\\Files\\ferdowsi_bigram.txt");
             try (BufferedReader br = new BufferedReader(new FileReader(file))) {
@@ -915,11 +934,11 @@ public class P3 {
                     String couple2 = splited2[0];
                     if (couple2.equals(temp)) {
 
-                        double predicteon = Double.parseDouble(splited2[1]);
 
+                        bigram_prediction = Double.parseDouble(splited2[1]);
 
-                        predictions.add(predicteon);
-                        find = true;
+//                        predictions.add(predicteon);
+//                        find = true;
                     }
 
 
@@ -930,20 +949,24 @@ public class P3 {
                 e.printStackTrace();
             }
 
-            if (find == false) {
-                String[] words = temp.split(";");
-                double backoff = backOff(words[1], "ferdowsi");
+//            if (find == false) {
+            String[] words = temp.split(";");
+            double backoff = backOff(bigram_prediction,words[1], "ferdowsi");
 
-                predictions.add(backoff);
-            }
+            predictions.add(backoff);
+//            }
 
         }
+
+
 
 
         double mul=1;
         for (int j = 0; j <predictions.size() ; j++) {
+
             mul*=predictions.get(j);
         }
+
 
         return mul;
 
